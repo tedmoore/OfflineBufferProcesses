@@ -24,4 +24,8 @@
 		if(bufnum.isNil) { Error("Cannot call % on a % that has been freed".format(thisMethod.name, this.class.name)).throw };
 		server.listSendMsg([\b_gen, dstBuf.bufnum, "waveSetCopyTo", bufnum, repetitions])
 	}
+	copyWithEnv { arg envBuf, dstBuf, srcStartFrame = 0, destStartFrame = 0, gain = 1, destGain = 0;
+		if(bufnum.isNil) { Error("Cannot call % on a % that has been freed".format(thisMethod.name, this.class.name)).throw };
+		server.listSendMsg([\b_gen, dstBuf.bufnum, "copyWithEnv", bufnum, envBuf.bufnum, srcStartFrame, destStartFrame, gain, destGain])
+	}
 }

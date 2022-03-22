@@ -125,6 +125,68 @@ void BufChunkSwap(World *world, struct SndBuf *buf, struct sc_msg_iter *msg)
 	}
 }
 
+void BufCopyWithEnv(World *world, struct SndBuf *dest_buf, struct sc_msg_iter *msg){
+
+	uint32 src_buf_num = msg->geti();
+	uint32 env_buf_num = msg->geti();
+	uint32 src_start_frame = msg->geti();
+	uint32 dest_start_frame = msg->geti();
+	float gain = msg->getf(1.0);
+	float dest_gain = msg->getf(0.0);
+	
+
+	if (src_buf_num >= world->mNumSndBufs){
+		Print("copyWithEnv: source buffer does not exist.\n");
+		return;
+	}
+	
+	if (env_buf_num >= world->mNumSndBufs){
+		Print("copyWithEnv: envBuf buffer does not exist.\n");
+		return;
+	}
+
+	SndBuf* src_buf = world->mSndBufs + src_buf_num;
+	SndBuf* env_buf = world->mSndBufs + env_buf_num;
+
+	if (src_buf->data == dest_buf->data){
+		Print("copyWithEnv: srcbuf is the same as the destBuf.\n");
+		return;
+	}
+	
+	if (env_buf->data == dest_buf->data){
+		Print("copyWithEnv: envBuf is the same as the destBuf.\n");
+		return;
+	}
+	
+	if (env_buf->data == src_buf->data){
+		Print("copyWithEnv: envBuf is the same as the srcBuf.\n");
+		return;
+	}
+	
+	if ((src_start_frame + env_buf->frames) > src_buf->frames){
+		Print("copyWithEnv: srcBuf does not have enough frames. It needs %i but only has %i.\n",src_start_frame + env_buf->frames,src_buf->frames);
+		return;
+	}
+
+	if ((dest_start_frame + env_buf->frames) > dest_buf->frames){
+		Print("copyWithEnv: destBuf does not have enough frames. It needs %i but only has %i.\n",dest_start_frame + env_buf->frames,dest_buf->frames);
+		return;
+	}
+	
+	if (src_buf->channels != dest_buf->channels){
+		Print("copyWithEnv: srcBuf and destBuf must have the same number of channels.\n");
+		return;
+	}
+	
+	for(int frame = 0; frame < env_buf->frames; frame++){
+		for(int chan = 0; chan < src_buf->channels; chan++){
+			int dest_samp = ((dest_start_frame + frame) * dest_buf->channels) + chan;
+			int src_samp = ((src_start_frame + frame) * src_buf->channels) + chan;
+			dest_buf->data[dest_samp] = (dest_buf->data[dest_samp] * dest_gain) + (src_buf->data[src_samp] * env_buf->data[frame] * gain);
+		}
+	}
+}
+
 void BufWaveSetCopyTo(World *world, struct SndBuf *buf, struct sc_msg_iter *msg)
 {
 	int frames1 = buf->frames;
@@ -215,4 +277,5 @@ PluginLoad(OfflineBufferProcessesUGens) {
 	DefineBufGen("removeDC", BufRemoveDC);
 	DefineBufGen("chunkSwap", BufChunkSwap);
 	DefineBufGen("waveSetCopyTo", BufWaveSetCopyTo);
+	DefineBufGen("copyWithEnv", BufCopyWithEnv);
 }
