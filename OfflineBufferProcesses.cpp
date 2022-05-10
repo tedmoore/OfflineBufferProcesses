@@ -37,6 +37,17 @@ void BufAdd(World *world, struct SndBuf *buf, struct sc_msg_iter *msg)
 	data[i] += offset;
 }
 
+void BufClip(World *world, struct SndBuf *buf, struct sc_msg_iter *msg)
+{
+	float *data = buf->data;
+	int size = buf->samples;
+	float min = msg->getf(-1.0);
+	float max = msg->getf(1.0);
+
+	for (int i = 0; i < size; ++i)
+	data[i] = std::max(std::min(data[i],max),min);
+}
+
 void BufGain(World *world, struct SndBuf *buf, struct sc_msg_iter *msg)
 {
 	float *data = buf->data;
@@ -273,6 +284,7 @@ PluginLoad(OfflineBufferProcessesUGens) {
 	ft = inTable;
 	DefineBufGen("mul", BufGain);
 	DefineBufGen("add", BufAdd);
+	DefineBufGen("clip", BufClip);
 	DefineBufGen("reverse", BufRev);
 	DefineBufGen("removeDC", BufRemoveDC);
 	DefineBufGen("chunkSwap", BufChunkSwap);

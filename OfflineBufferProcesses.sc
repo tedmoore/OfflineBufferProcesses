@@ -8,6 +8,10 @@
 		if(bufnum.isNil) { Error("Cannot call % on a % that has been freed".format(thisMethod.name, this.class.name)).throw };
 		server.listSendMsg([\b_gen, bufnum, "add", offset])
 	}
+	clip { arg min = -1.0, max = 1.0;
+		if(bufnum.isNil) { Error("Cannot call % on a % that has been freed".format(thisMethod.name, this.class.name)).throw };
+		server.listSendMsg([\b_gen, bufnum, "clip", min, max])
+	}
 	removeDC { arg coef = 0.995;
 		if(bufnum.isNil) { Error("Cannot call % on a % that has been freed".format(thisMethod.name, this.class.name)).throw };
 		server.listSendMsg([\b_gen, bufnum, "removeDC", coef])
